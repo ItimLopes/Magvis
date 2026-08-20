@@ -519,12 +519,15 @@
     const capAngle = Math.PI * 0.38;
     const loader   = new THREE.TextureLoader();
 
-    // cria procedural, carrega a textura real em seguida (substitui)
-    const tex = makeAuroraTexture(); // procedural imediato
-    loader.load('assets/aurora_texture.png', (loaded) => {
-      tex.image = loaded.image;
-      tex.needsUpdate = true;
-});
+    // tenta carregar textura real, usa procedural caso haja fallback
+     let tex = makeAuroraTexture(); // procedural imediato
+    loader.load('assets/aurora_texture.jpg',
+      loaded => {
+        tex = loaded;
+        if (auroraNorth) { auroraNorth.material.map = tex; auroraNorth.material.needsUpdate = true; }
+        if (auroraSouth) { auroraSouth.material.map = tex; auroraSouth.material.needsUpdate = true; }
+      }
+    );
 
     const mkMat = () => new THREE.MeshBasicMaterial({
       map: tex, transparent: true, opacity: 0,
