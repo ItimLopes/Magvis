@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulação — Ventos Solares & Magnetosfera</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="ui-overlay">
+    <header class="hud-header">
+      <div class="title-block">
+        <span class="label-eyebrow">SIMULAÇÃO INTERATIVA</span>
+        <h1>Ventos Solares <span class="accent">&</span> Magnetosfera</h1>
+      </div>
+      <div class="storm-selector">
+        <span class="label-eyebrow">NÍVEL DE TEMPESTADE</span>
+        <div class="storm-buttons" id="stormButtons">
+          <button class="storm-btn active" data-level="0">Calmo</button>
+          <button class="storm-btn" data-level="1">G1</button>
+          <button class="storm-btn" data-level="2">G2</button>
+          <button class="storm-btn" data-level="3">G3</button>
+          <button class="storm-btn" data-level="4">G4</button>
+          <button class="storm-btn" data-level="5">G5</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CARD DE INFORMAÇÕES — com botão de toggle no cabeçalho -->
+    <aside class="info-panel" id="infoPanel">
+      <div class="info-panel-header">
+        <div class="info-storm-level">
+          <div class="storm-badge" id="stormBadge">G0</div>
+          <div class="storm-meta">
+            <p class="storm-name" id="stormName">Atividade solar mínima</p>
+            <p class="storm-kp" id="stormKp">Kp: 0–4</p>
+          </div>
+        </div>
+        <button class="info-toggle-btn" id="infoPanelToggle" title="Mostrar / ocultar painel">
+          <svg id="infoPanelIcon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="info-panel-body" id="infoPanelBody">
+        <div class="info-divider"></div>
+        <ul class="info-stats">
+          <li>
+            <span class="stat-label">Velocidade do vento</span>
+            <span class="stat-value" id="statSpeed">350 km/s</span>
+          </li>
+          <li>
+            <span class="stat-label">Densidade</span>
+            <span class="stat-value" id="statDensity">3 p/cm³</span>
+          </li>
+          <li>
+            <span class="stat-label">Campo B sul</span>
+            <span class="stat-value" id="statBfield">–2 nT</span>
+          </li>
+          <li>
+            <span class="stat-label">Aurora</span>
+            <span class="stat-value" id="statAurora">Ausente</span>
+          </li>
+          <li>
+            <span class="stat-label">Risco ao satélite</span>
+            <span class="stat-value risk" id="statRisk">Nenhum</span>
+          </li>
+        </ul>
+        <div class="info-divider"></div>
+        <p class="info-desc" id="infoDesc">
+          Vento solar em nível basal. Magnetosfera estável. Nenhum risco a satélites ou infraestrutura.
+        </p>
+      </div>
+    </aside>
+
+    <div class="legend">
+      <div class="legend-item"><span class="dot dot-wind"></span>Vento solar</div>
+      <div class="legend-item"><span class="dot dot-field"></span>Campo magnético</div>
+      <div class="legend-item"><span class="dot dot-inner"></span>Cinturão interno (Van Allen)</div>
+      <div class="legend-item"><span class="dot dot-outer"></span>Cinturão externo (Van Allen)</div>
+      <div class="legend-item"><span class="dot dot-aurora"></span>Aurora polar</div>
+      <div class="legend-item"><span class="dot dot-sat"></span>Satélite</div>
+    </div>
+
+    <div class="cam-hint" id="camHint">
+      <span>🖱 Arrastar: orbitar &nbsp;|&nbsp; Scroll: zoom &nbsp;|&nbsp; Botão direito: deslocar</span>
+    </div>
+
+    <div class="controls-bar">
+      <button id="btnPause" class="ctrl-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="2" y="1" width="4" height="12" rx="1" fill="currentColor"/>
+          <rect x="8" y="1" width="4" height="12" rx="1" fill="currentColor"/>
+        </svg>
+        Pausar
+      </button>
+      <button id="btnReset" class="ctrl-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 7a5 5 0 1 0 1.5-3.5L1 2v4h4L3.8 4.6A3.5 3.5 0 1 1 2 7z" fill="currentColor"/>
+        </svg>
+        Reset câmera
+      </button>
+      <label class="ctrl-label">
+        <span>Velocidade</span>
+        <input type="range" id="speedSlider" min="0.2" max="3" step="0.1" value="1" />
+        <span id="speedVal">1×</span>
+      </label>
+      <!-- Toggles: todos desmarcados por padrão; só satélite marcado -->
+      <label class="ctrl-label toggle-label">
+        <input type="checkbox" id="toggleFieldLines" />
+        <span class="toggle-track"></span>
+        Campo magnético
+      </label>
+      <label class="ctrl-label toggle-label">
+        <input type="checkbox" id="toggleWindLines" />
+        <span class="toggle-track"></span>
+        Linhas de vento
+      </label>
+      <label class="ctrl-label toggle-label">
+        <input type="checkbox" id="toggleVanAllen" />
+        <span class="toggle-track"></span>
+        Van Allen
+      </label>
+      <label class="ctrl-label toggle-label">
+        <input type="checkbox" id="toggleSatellite" checked />
+        <span class="toggle-track"></span>
+        Satélite
+      </label>
+    </div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <!-- ===== TEXTURAS =====
+    assets/earth_day.jpg     → NASA Visible Earth (Blue Marble)
+    assets/aurora_texture.png → NASA SVS (aurora oval) ou PNG próprio
+    assets/sun_surface.jpg   → Solar System Scope textures
+    Sem texturas: fallbacks procedurais automáticos.
+  -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
